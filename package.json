@@ -1,0 +1,330 @@
+# MindVision AI — Next.js AI App Files
+
+Replace your current simple HTML project with these files.
+
+---
+
+# 1. package.json
+
+Create a file named:
+
+`package.json`
+
+Paste this:
+
+```json
+{
+  "name": "mindvision-ai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "14.2.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "openai": "^4.56.0"
+  }
+}
+```
+
+---
+
+# 2. app/page.js
+
+Create folder:
+
+`app`
+
+Inside it create:
+
+`page.js`
+
+Paste this:
+
+```javascript
+'use client';
+
+import { useState } from 'react';
+
+export default function Home() {
+  const [message, setMessage] = useState('');
+  const [response, setResponse] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function askAI() {
+    if (!message) return;
+
+    setLoading(true);
+    setResponse('');
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await res.json();
+      setResponse(data.reply);
+    } catch (error) {
+      setResponse('Something went wrong.');
+    }
+
+    setLoading(false);
+  }
+
+  return (
+    <main className="container">
+      <div className="hero">
+        <h1>
+          MindVision <span>AI</span>
+        </h1>
+
+        <p>
+          AI-powered business solutions, marketing help,
+          KDP publishing support, and smart productivity tools.
+        </p>
+
+        <div className="chatBox">
+          <textarea
+            placeholder="Ask MindVision AI anything..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+
+          <button onClick={askAI}>
+            {loading ? 'Thinking...' : 'Ask AI'}
+          </button>
+        </div>
+
+        <div className="responseBox">
+          {response || 'AI response will appear here...'}
+        </div>
+      </div>
+    </main>
+  );
+}
+```
+
+---
+
+# 3. app/api/chat/route.js
+
+Create folders:
+
+`app/api/chat`
+
+Inside create:
+
+`route.js`
+
+Paste this:
+
+```javascript
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function POST(req) {
+  try {
+    const body = await req.json();
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are MindVision AI, a smart AI business assistant helping businesses and individuals with marketing, growth, productivity, publishing, and problem solving.'
+        },
+        {
+          role: 'user',
+          content: body.message
+        }
+      ]
+    });
+
+    return Response.json({
+      reply: completion.choices[0].message.content
+    });
+  } catch (error) {
+    return Response.json({
+      reply: 'Error connecting to AI.'
+    });
+  }
+}
+```
+
+---
+
+# 4. app/globals.css
+
+Inside `app` folder create:
+
+`globals.css`
+
+Paste this:
+
+```css
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #050b1f;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.hero {
+  width: 100%;
+  max-width: 900px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 72px;
+  margin-bottom: 20px;
+}
+
+h1 span {
+  color: #38bdf8;
+}
+
+p {
+  font-size: 20px;
+  color: #cbd5e1;
+  margin-bottom: 40px;
+}
+
+.chatBox {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 180px;
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px;
+  padding: 20px;
+  color: white;
+  font-size: 16px;
+}
+
+button {
+  background: linear-gradient(135deg,#0ea5e9,#2563eb,#7c3aed);
+  border: none;
+  color: white;
+  padding: 16px;
+  border-radius: 14px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.responseBox {
+  margin-top: 30px;
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 24px;
+  text-align: left;
+  white-space: pre-wrap;
+  min-height: 220px;
+  color: #dbeafe;
+}
+```
+
+---
+
+# 5. app/layout.js
+
+Inside `app` folder create:
+
+`layout.js`
+
+Paste this:
+
+```javascript
+import './globals.css';
+
+export const metadata = {
+  title: 'MindVision AI',
+  description: 'AI-powered business solutions platform'
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+---
+
+# 6. Add OpenAI API Key In Vercel
+
+Go to:
+
+* Vercel Dashboard
+* Settings
+* Environment Variables
+
+Add:
+
+Name:
+
+`OPENAI_API_KEY`
+
+Value:
+
+Your OpenAI API key
+
+Then:
+
+* Save
+* Redeploy project
+
+---
+
+# 7. Delete Old index.html
+
+You no longer need:
+
+`index.html`
+
+This is now a real Next.js AI app.
+
+---
+
+# FINAL RESULT
+
+After deployment:
+
+* Users ask real questions
+* OpenAI generates real answers
+* MindVision AI becomes a real AI-powered platform
+* Business help becomes dynamic and intelligent
