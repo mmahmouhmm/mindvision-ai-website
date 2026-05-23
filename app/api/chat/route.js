@@ -1,34 +1,40 @@
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
   try {
-    const body = await req.json();
+    const { message } = await req.json();
 
-    const completion = await openai.chat.completions.create({
+    if (!message) {
+      return Response.json({ reply: 'Please enter a question first.' });
+    }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
           content:
-            'You are MindVision AI, a smart AI business assistant helping businesses and individuals with marketing, growth, productivity, publishing, and problem solving.'
+            'You are MindVision AI, a smart AI business assistant. Help businesses and individuals with marketing, sales, ads, websites, KDP publishing, resumes, documents, productivity, and business growth. Give practical, clear, step-by-step answers.',
         },
         {
           role: 'user',
-          content: body.message
-        }
-      ]
+          content: message,
+        },
+      ],
     });
 
     return Response.json({
-      reply: completion.choices[0].message.content
+      reply: response.choices[0].message.content,
     });
   } catch (error) {
     return Response.json({
-      reply: 'Error connecting to AI.'
+      reply: 'Error connecting to AI. Please check the API key and redeploy.',
     });
   }
 }
