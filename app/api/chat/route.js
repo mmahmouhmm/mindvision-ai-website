@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-app/api/chat/route.js
+
 export async function POST(req) {
   try {
     const body = await req.json();
